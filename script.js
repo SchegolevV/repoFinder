@@ -2,8 +2,8 @@ function debounce(fn, debounceTime) {
     let timer;
     return function (...args) {
         clearTimeout(timer);
-        timer = setTimeout(async () => {
-            await fn.apply(this, args);
+        timer = setTimeout(() => {
+            fn.apply(this, args);
         }, debounceTime);
     };
 }
@@ -42,11 +42,16 @@ search.appendChild(autocompleteList);
 input.addEventListener(
     'keyup',
     debounce(async function (e) {
-        if (input.value.length == 0 || e.code == 'Space'){
-            autocompleteList.innerHTML = ''
+        autocompleteList.innerHTML = ''
+
+        if (e.code === 'Space') {
+            input.value = input.value.trim()
+        }
+
+        if (input.value.length === 0){
             return;
         };
-        autocompleteList.innerHTML = ''
+
         searchRepositories()
             .then((parsedResponse) => {
                 const repoInfoList = [];
@@ -67,6 +72,10 @@ input.addEventListener(
 
                     autocompleteListItem.addEventListener('click', function() {
                         input.value = '';
+                        
+                        let currentCompletes = Array.from(autocompleteList.children)
+                        currentCompletes.forEach((item) => item.remove())
+
                         let clickedItem = createNodeItem('li', 'clicked-item')
                         search.appendChild(clickedItem)
                         clickedItem.insertAdjacentHTML('afterbegin', `<div>stars: ${repoInfo.stargazers_count}</div>`)
